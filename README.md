@@ -67,13 +67,19 @@ git clone https://github.com/DayRob/Azeroth mod-playerbots-bis
 cd ../build && cmake .. && make -j$(nproc) && make install
 ```
 
-mod-playerbots doit être présent et activé. Importez ensuite les deux tables dans votre
-base **world** si votre version d'AzerothCore n'applique pas automatiquement le SQL des
-modules :
+mod-playerbots doit être présent et activé.
+
+Les tables s'importent **toutes seules** : le système de mises à jour d'AzerothCore scanne
+`data/sql/db-world/` de chaque module au démarrage du worldserver et applique les fichiers
+qu'il ne connaît pas encore, dans l'ordre alphabétique. Il suffit donc de démarrer le
+serveur une fois. Si votre configuration désactive ce système
+(`Updates.EnableDatabases = 0`), importez-les à la main, **dans cet ordre** —
+`02` porte une clé étrangère vers `01` :
 
 ```bash
 mysql -u acore -p acore_world < modules/mod-playerbots-bis/data/sql/db-world/base/01_playerbots_bis_tier.sql
 mysql -u acore -p acore_world < modules/mod-playerbots-bis/data/sql/db-world/base/02_playerbots_bis_item.sql
+mysql -u acore -p acore_world < modules/mod-playerbots-bis/data/sql/db-world/base/03_vanilla_preraid.sql
 ```
 
 Copiez `conf/playerbots_bis.conf.dist` vers `etc/playerbots_bis.conf` (le build le dépose

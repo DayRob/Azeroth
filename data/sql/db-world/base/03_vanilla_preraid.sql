@@ -25,6 +25,13 @@ CREATE TEMPORARY TABLE `bis_seed` (
     `item_name` VARCHAR(100) NOT NULL
 ) ENGINE=MEMORY DEFAULT CHARSET=utf8mb4;
 
+-- Note collation : item_template.name est en utf8mb4_unicode_ci sur AzerothCore,
+-- alors qu'une table creee sans COLLATE explicite herite du defaut du serveur
+-- (utf8mb4_0900_ai_ci sur MySQL 8 et 9). Comparer les deux directement leve
+-- ERROR 1267 "Illegal mix of collations". Les deux jointures ci-dessous forcent
+-- donc explicitement la meme collation des deux cotes, ce qui rend le fichier
+-- portable quelle que soit la configuration du serveur.
+
 -- =====================================================================
 -- Guerrier Fureur (classe 1, spe 1)
 -- =====================================================================
@@ -109,7 +116,7 @@ SELECT s.`class`, s.`spec`, s.`slot`, s.`faction`, 10, r.entry, s.`rank`,
        CONCAT('Vanilla Pre-Raid - ', s.`item_name`)
 FROM `bis_seed` s
 JOIN (SELECT `name`, MIN(`entry`) AS entry FROM `item_template` GROUP BY `name`) r
-  ON r.`name` = s.`item_name`;
+  ON r.`name` COLLATE utf8mb4_general_ci = s.`item_name` COLLATE utf8mb4_general_ci;
 
 -- ---------------------------------------------------------------------
 -- VERIFICATION - a executer apres l'import.
@@ -118,7 +125,8 @@ JOIN (SELECT `name`, MIN(`entry`) AS entry FROM `item_template` GROUP BY `name`)
 -- ---------------------------------------------------------------------
 SELECT s.`class`, s.`spec`, s.`slot`, s.`item_name` AS nom_non_resolu
 FROM `bis_seed` s
-LEFT JOIN `item_template` it ON it.`name` = s.`item_name`
+LEFT JOIN `item_template` it
+  ON it.`name` COLLATE utf8mb4_general_ci = s.`item_name` COLLATE utf8mb4_general_ci
 WHERE it.`entry` IS NULL;
 
 DROP TEMPORARY TABLE IF EXISTS `bis_seed`;
