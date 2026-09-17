@@ -1,89 +1,134 @@
-> **Fork « BiS strict ».** Ce dépôt est une copie modifiée de
-> [mod-playerbots](https://github.com/mod-playerbots/mod-playerbots) (base `b6696bd`) qui ajoute un
-> mode d'itémisation strictement piloté par la table `playerbots_bis_gear` pour les randombots.
-> Il s'installe **à la place** du module original. Voir [STRICT_BIS.md](STRICT_BIS.md).
+# mod-playerbots-bis
 
-<p align="center">
-    <a href="https://github.com/mod-playerbots/mod-playerbots/blob/master/README.md">English</a>
-    |
-    <a href="https://github.com/mod-playerbots/mod-playerbots/blob/master/README_CN.md">中文</a>
-    |
-    <a href="https://github.com/mod-playerbots/mod-playerbots/blob/master/README_ES.md">Español</a>
-</p>
+Extension de [mod-playerbots](https://github.com/mod-playerbots/mod-playerbots) pour AzerothCore.
 
+Les randombots s'équipent et rollent en suivant une **échelle de progression BiS** par
+classe et par spécialisation, au lieu de la règle « ce nouvel objet vaut 1,1 fois mieux
+que l'ancien ». Un objet absent de la liste de leur spé n'est ni équipé, ni convoité.
 
-<div align="center">
-  <img src="banner.png" alt="Playerbots Banner" width="700px">
-</div>
+**Ce module ne modifie pas mod-playerbots.** Il s'installe à côté, comme n'importe quel
+module AzerothCore, et vos modifications locales de mod-playerbots restent intactes.
 
-<div align="center">
-    <img src="https://github.com/mod-playerbots/mod-playerbots/actions/workflows/macos_build.yml/badge.svg">
-    <img src="https://github.com/mod-playerbots/mod-playerbots/actions/workflows/core_build.yml/badge.svg">
-    <img src="https://github.com/mod-playerbots/mod-playerbots/actions/workflows/windows_build.yml/badge.svg">
-</div>
+---
 
-# Playerbots Module
-`mod-playerbots` is an [AzerothCore](https://www.azerothcore.org/) module that adds player-like bots to a server. The project is based off [IKE3's Playerbots](https://github.com/ike3/mangosbot).
+## Le principe
 
-Features include:
+Chaque objet de la table appartient à un **palier** (`tier_id`). Un palier plus haut
+l'emporte toujours sur un palier plus bas, quelles que soient les statistiques :
 
-- The ability to log in alt characters as bots, allowing players to interact with their other characters, form parties, level up, and more
-- Random bots that wander through the world, complete quests, and otherwise behave like players, simulating the MMO experience
-- Bots capable of running most raids and battlegrounds
-- Highly configurable settings to define how bots behave
-- Excellent performance, even when running thousands of bots
+```
+Vanilla Pre-Raid  <  MC/Ony  <  BWL  <  ZG  <  AQ20  <  AQ40  <  Naxx40
+                  <  TBC Pre-Raid  <  Karazhan  <  SSC/TK  <  Hyjal/BT  <  Sunwell
+                  <  WotLK Pre-Raid  <  Naxx  <  Ulduar  <  ToC  <  ICC  <  Ruby Sanctum
+```
 
-We also have a **[Discord server](https://discord.gg/NQm5QShwf9)** where you can discuss the project, ask questions, and get involved in the community!
+À l'intérieur d'un même palier et d'un même emplacement, la colonne `rank` ordonne les
+choix : 1 est le meilleur, puis 2, puis 3. Un guerrier Protection préférera donc toujours
+sa pièce de Blackwing Lair à sa pièce de Molten Core, et parmi les pièces de Molten Core
+celle de rank 1.
+
+Un bot ne roll que sur ce qui peut le faire monter dans cette échelle. Tout le reste :
+PASS.
+
+## Ce que le module couvre — et ce qu'il ne couvre pas
+
+| Décision | Gouvernée ? |
+|---|---|
+| Roll Need/Greed/Pass en groupe | Oui |
+| Équipement d'un objet ramassé, échangé ou reçu en quête | Oui |
+| Génération d'équipement au randomize d'un bot | **Non** — reste aux poids de stats |
+
+La génération (`PlayerbotFactory::InitEquipment`) est un appel direct dans
+mod-playerbots, pas un objet du registre : aucun module ne peut s'y substituer. En
+pratique cela compte peu, car c'est la dérive au fil du loot qui éloigne les bots de
+leur BiS, pas leur équipement initial.
+
+## Comment ça marche
+
+Le moteur de mod-playerbots résout ses valeurs **par nom**, et
+`SharedNamedObjectContextList::Add()` *assigne* dans sa table de créateurs au lieu d'y
+insérer. Le dernier contexte enregistré pour un nom l'emporte donc. Ce module enregistre
+ses propres `"item usage"` et `"item upgrade"` au premier tick du monde — après
+mod-playerbots, et avant la connexion du moindre bot.
+
+Les deux valeurs délèguent d'abord à celles d'origine, puis ne restreignent le verdict
+que pour les armes et armures. Tout le reste — quêtes, munitions, consommables, décisions
+de vente, d'hôtel des ventes et de désenchantement — passe inchangé.
 
 ## Installation
 
-Supported platforms are Ubuntu, Windows, and macOS. Other Linux distributions may work, but may not receive support.
-
-> **Important:** All `mod-playerbots` installations require a custom fork of AzerothCore: [mod-playerbots/azerothcore-wotlk (Playerbot branch)](https://github.com/mod-playerbots/azerothcore-wotlk/tree/Playerbot). The standard AzerothCore repository will **not** work.
-
-### Quick Start
+> **Le nom du dossier est significatif.** AzerothCore dérive le point d'entrée du module de
+> son nom de dossier : il doit être `modules/mod-playerbots-bis`. Cloné sous un autre nom, le
+> module compile puis ne fait rien.
 
 ```bash
-git clone https://github.com/mod-playerbots/azerothcore-wotlk.git --branch=Playerbot
-cd azerothcore-wotlk/modules
-git clone https://github.com/mod-playerbots/mod-playerbots.git --branch=master
+cd /chemin/vers/azerothcore/modules
+git clone https://github.com/DayRob/Azeroth mod-playerbots-bis
+cd ../build && cmake .. && make -j$(nproc) && make install
 ```
 
-Then build the server following the platform-specific instructions in our **[Installation Guide](https://github.com/mod-playerbots/mod-playerbots/wiki/Installation-Guide)**.
+mod-playerbots doit être présent et activé. Importez ensuite les deux tables dans votre
+base **world** si votre version d'AzerothCore n'applique pas automatiquement le SQL des
+modules :
 
-> **Testing branch:** A `test-staging` branch is available with the latest features and fixes before they are merged into `master`. To use it, clone with `--branch=test-staging` instead. Note that this branch may contain unstable or breaking changes — use it at your own risk and only if you are comfortable troubleshooting issues.
+```bash
+mysql -u acore -p acore_world < modules/mod-playerbots-bis/data/sql/db-world/base/01_playerbots_bis_tier.sql
+mysql -u acore -p acore_world < modules/mod-playerbots-bis/data/sql/db-world/base/02_playerbots_bis_item.sql
+```
 
-### Detailed Guides
+Copiez `conf/playerbots_bis.conf.dist` vers `etc/playerbots_bis.conf` et mettez
+`PlayerbotsBis.Enable = 1`.
 
-| Guide | Description |
-|---|---|
-| **[Installation Guide](https://github.com/mod-playerbots/mod-playerbots/wiki/Installation-Guide)** | Full step-by-step instructions for clean installs, migrating from existing AzerothCore, Docker setup, adding modules, and updating |
-| **[Troubleshooting](https://github.com/mod-playerbots/mod-playerbots/wiki/Troubleshooting)** | Solutions to the most common build errors, database issues, configuration mistakes, crashes, and platform-specific problems |
+## Configuration essentielle
 
-For additional references, see the [AzerothCore Installation Guide](https://www.azerothcore.org/wiki/installation) and [Installing a Module](https://www.azerothcore.org/wiki/installing-a-module) pages.
+```ini
+PlayerbotsBis.Enable = 1
+PlayerbotsBis.MaxTier = 20          # cale les bots sur la phase de ton serveur
+PlayerbotsBis.BlockOffListRolls = 1 # PASS sur tout ce qui n'est pas dans la liste
+```
 
-## Documentation
+Le fichier `.conf.dist` documente chaque réglage et donne la table des `tier_id`.
 
-The [Playerbots Wiki](https://github.com/mod-playerbots/mod-playerbots/wiki) contains an extensive overview of AddOns, commands, raids with programmed bot strategies, and recommended performance configurations. Please note that documentation may be incomplete or out-of-date in some sections, and contributions are welcome.
+### mod-individual-progression
 
-Bots are controlled via chat commands. For larger bot groups, this can be cumbersome. Because of this, community members have developed client AddOns to allow controlling bots through the in-game UI. We recommend you check out their projects listed in the [AddOns and Submodules](https://github.com/mod-playerbots/mod-playerbots/wiki/Playerbot-Addons-and-Sub%E2%80%90Modules) page.
+`PlayerbotsBis.UseIndividualProgression = 1` limite chaque bot aux paliers que **son
+propre personnage** a débloqués, via la colonne `required_progression` de
+`playerbots_bis_tier`. Un bot qui n'a pas fini Molten Core ne convoitera pas le stuff de
+Blackwing Lair.
 
-## Contributing
+Il n'y a aucune dépendance de compilation : l'état est lu via les quêtes cachées
+`66000 + état` dans lesquelles mod-individual-progression stocke la progression. Laissez
+le réglage à 0 si vous n'avez pas ce module.
 
-This project is still under development. We encourage anyone to make contributions, anything from pull requests to reporting issues. If you encounter any errors or experience crashes, we encourage you [report them as GitHub issues](https://github.com/mod-playerbots/mod-playerbots/issues/new?template=bug_report.md). Your valuable feedback will help us improve this project collaboratively.
+### Un piège de configuration côté mod-playerbots
 
-If you make coding contributions, `mod-playerbots` complies with the [C++ Code Standards](https://www.azerothcore.org/wiki/cpp-code-standards) established by AzerothCore. Each Pull Request must include all test scenarios the author performed, along with their results, to demonstrate that the changes were properly verified.
+Avec `AiPlayerbot.LootNeedRollLevel = 1`, mod-playerbots convertit tout vote NEED en
+GREED avant de l'émettre — les bots ne rollent alors jamais Need, y compris sur leur BiS.
+Passez ce réglage à `2` pour que les bots réservent un vrai Need à leurs pièces de liste.
 
-We recommend joining the [Discord server](https://discord.gg/NQm5QShwf9) to make your contributions to the project easier, as a lot of active support is carried out through this server.
+## Les tables
 
-Please click on the "⭐" button to stay up to date and help us gain more visibility on GitHub!
+`playerbots_bis_tier` définit l'échelle, `playerbots_bis_item` les objets. Les en-têtes
+des deux fichiers SQL documentent chaque colonne : numéros de spé par classe, énumération
+des emplacements, sentinelle 10 du druide ours, lignes de faction.
 
-## Acknowledgements
+Les lignes fournies sont converties depuis la table `playerbots_bis_gear` de
+mod-playerbots — identifiants et noms d'objets d'origine — réparties sur l'échelle de
+paliers. `tools/convert_playerbots_bis_gear.py` permet de régénérer le fichier.
 
-`mod-playerbots` is based on [ZhengPeiRu21/mod-playerbots](https://github.com/ZhengPeiRu21/mod-playerbots) and [celguar/mangosbot-bots](https://github.com/celguar/mangosbot-bots). We extend our gratitude to [@ZhengPeiRu21](https://github.com/ZhengPeiRu21) and [@celguar](https://github.com/celguar) for their continued efforts in maintaining the module.
+**Ce jeu de données est un point de départ, pas une liste BiS de référence.** Lacunes
+connues :
 
-Also, a thank you to the many contributors who've helped build this project:
+- Paliers vides : Vanilla Pre-Raid (10), Zul'Gurub (40), AQ20 (50), WotLK Pre-Raid (130),
+  Ruby Sanctum (180).
+- Sur les quatre paliers Vanilla renseignés, aucune ligne pour : Guerrier Armes, Voleur
+  Assassinat, Voleur Subtilité, Prêtre Discipline.
 
-<a href="https://github.com/mod-playerbots/mod-playerbots/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=mod-playerbots/mod-playerbots" />
-</a>
+Une spé sans aucune ligne au palier courant retombe proprement sur la logique d'origine
+de mod-playerbots — le bot n'est jamais laissé nu.
+
+Après édition des tables, `.playerbotsbis reload` les recharge sans redémarrer.
+
+## Licence
+
+GNU GPL v2, comme AzerothCore et mod-playerbots.

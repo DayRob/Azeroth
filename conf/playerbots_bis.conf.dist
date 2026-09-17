@@ -1,0 +1,71 @@
+####################################################################################################
+# mod-playerbots-bis
+#
+# Fait suivre aux bots de mod-playerbots une echelle de progression BiS au lieu de la
+# regle "ce nouvel objet vaut 1.1 fois mieux que l'ancien".
+#
+# Le module ne modifie pas mod-playerbots : il remplace les valeurs "item usage" et
+# "item upgrade" dans le registre du moteur, ce qui couvre les rolls de loot et
+# l'equipement automatique. La generation d'equipement au randomize
+# (PlayerbotFactory::InitEquipment) reste hors de portee d'un module et continue
+# d'utiliser les poids de stats de mod-playerbots.
+####################################################################################################
+
+[worldserver]
+
+# Active le module. A 0, mod-playerbots se comporte exactement comme sans ce module :
+# aucune valeur n'est remplacee.
+# Defaut : 0 (desactive)
+PlayerbotsBis.Enable = 0
+
+# Quels bots sont gouvernes par l'echelle.
+# Les randombots sont la cible normale : ils s'equipent seuls et derivent avec le temps.
+# Les bots addclass et les altbots sont laisses de cote par defaut, pour que la commande
+# "autogear bis" et l'itemisation par stats restent disponibles sur les bots que tu pilotes.
+PlayerbotsBis.ApplyToRandomBots = 1
+PlayerbotsBis.ApplyToAddClassBots = 0
+PlayerbotsBis.ApplyToAltBots = 0
+
+# Niveau minimum d'un bot pour etre gouverne. Les listes BiS ne contiennent que du
+# stuff de palier, donc un bot en cours de leveling doit garder la logique d'origine
+# sous peine de ne rien avoir a se mettre.
+# 0 = pas de minimum (le module s'applique a tout niveau)
+# Defaut : 0
+PlayerbotsBis.MinLevel = 0
+
+# Un objet absent de la liste de la classe/spe du bot ne peut plus etre equipe ni
+# rolle : le bot PASS dessus. Les verdicts vendeur / hotel des ventes / desenchantement
+# ne sont pas touches, le bot continue de gerer sainement ce qu'il ramasse.
+# A 0, seuls les objets BiS gagnent en priorite, mais le bot peut toujours rouler sur
+# une amelioration hors liste selon la logique d'origine.
+# Defaut : 1 (active)
+PlayerbotsBis.BlockOffListRolls = 1
+
+# Palier maximum que les bots peuvent viser, tel que defini dans playerbots_bis_tier.
+# C'est le reglage a utiliser pour caler tes bots sur la phase courante de ton serveur.
+#    10 Vanilla Pre-Raid        80 TBC Pre-Raid          130 WotLK Pre-Raid
+#    20 Vanilla P1 MC/Ony       90 TBC P1 Karazhan       140 WotLK P1 Naxx
+#    30 Vanilla P2 BWL         100 TBC P2 SSC/TK         150 WotLK P2 Ulduar
+#    40 Vanilla P3 ZG          110 TBC P3 Hyjal/BT       160 WotLK P3 ToC
+#    50 Vanilla P4 AQ20        120 TBC P4 Sunwell        170 WotLK P4 ICC
+#    60 Vanilla P5 AQ40                                  180 WotLK P5 Ruby Sanctum
+#    70 Vanilla P6 Naxx40
+# 0 = pas de plafond, les bots visent le sommet de l'echelle.
+# Defaut : 0
+PlayerbotsBis.MaxTier = 0
+
+# Raccorde le plafond a mod-individual-progression : un bot ne vise que les paliers
+# dont required_progression est atteint par son propre personnage. Le plafond
+# MaxTier ci-dessus reste applique par-dessus.
+#
+# Aucune dependance de compilation : l'etat est lu via les quetes cachees 66000 + etat
+# que ce module utilise pour stocker la progression. Si mod-individual-progression
+# n'est pas installe, l'etat vaut 0 et seuls les paliers a required_progression = 0
+# s'appliquent - donc laisse ce reglage a 0 si tu n'as pas ce module.
+# Defaut : 0 (desactive)
+PlayerbotsBis.UseIndividualProgression = 0
+
+# Duree de mise en cache de l'etat de progression d'un compte, en secondes.
+# Evite une requete SQL par objet evalue. Ignore si UseIndividualProgression = 0.
+# Defaut : 300
+PlayerbotsBis.ProgressionCacheSeconds = 300
