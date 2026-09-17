@@ -76,8 +76,20 @@ mysql -u acore -p acore_world < modules/mod-playerbots-bis/data/sql/db-world/bas
 mysql -u acore -p acore_world < modules/mod-playerbots-bis/data/sql/db-world/base/02_playerbots_bis_item.sql
 ```
 
-Copiez `conf/playerbots_bis.conf.dist` vers `etc/playerbots_bis.conf` et mettez
-`PlayerbotsBis.Enable = 1`.
+Copiez `conf/playerbots_bis.conf.dist` vers `etc/playerbots_bis.conf` (le build le dépose
+à côté de `playerbots.conf.dist`) et mettez `PlayerbotsBis.Enable = 1`.
+
+Au démarrage, le worldserver affiche une de ces trois lignes :
+
+```
+[mod-playerbots-bis] Active - BiS ladder governs bot gear and loot rolls (18 tiers, 6323 items)
+[mod-playerbots-bis] Dormant (PlayerbotsBis.Enable = 0) - ...
+[mod-playerbots-bis] Tables unavailable - bot itemisation left untouched
+```
+
+La troisième signifie que le SQL n'a pas été importé. Dans ce cas le module reste inerte
+même avec `Enable = 1`, et un `.playerbotsbis reload` ne suffira pas : il faut importer les
+tables puis redémarrer.
 
 ## Configuration essentielle
 
@@ -127,7 +139,10 @@ connues :
 Une spé sans aucune ligne au palier courant retombe proprement sur la logique d'origine
 de mod-playerbots — le bot n'est jamais laissé nu.
 
-Après édition des tables, `.playerbotsbis reload` les recharge sans redémarrer.
+Après édition des tables, `.playerbotsbis reload` les recharge sans redémarrer. La même
+commande prend aussi en compte un changement de `PlayerbotsBis.Enable` ou de
+`PlayerbotsBis.MaxTier` : le module s'enregistre auprès du moteur dès le premier tick du
+monde, même désactivé, précisément pour pouvoir être basculé à chaud.
 
 ## Licence
 

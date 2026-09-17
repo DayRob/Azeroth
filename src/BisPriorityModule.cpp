@@ -51,13 +51,6 @@ public:
         _registered = true;
 
         sBisPriorityMgr->LoadConfig();
-
-        if (!sBisPriorityMgr->IsEnabled())
-        {
-            LOG_INFO("server.loading", "[mod-playerbots-bis] Disabled (PlayerbotsBis.Enable = 0)");
-            return;
-        }
-
         sBisPriorityMgr->LoadTables();
 
         if (!sBisPriorityMgr->IsLoaded())
@@ -65,6 +58,16 @@ public:
             LOG_ERROR("server.loading", "[mod-playerbots-bis] Tables unavailable - bot itemisation left untouched");
             return;
         }
+
+        // Registration happens even when the module is switched off, so that
+        // PlayerbotsBis.Enable can be toggled at runtime with ".playerbotsbis
+        // reload". This is the only moment at which registering is safe (after
+        // playerbots, before any bot exists), so skipping it here would leave
+        // the module permanently inert until the next restart.
+        //
+        // A disabled module costs one delegated virtual call per gear decision:
+        // BisPriorityMgr::AppliesTo() returns false, and the replacement values
+        // hand back exactly what playerbots would have answered.
 
         RegisterClassValueContext<WarriorAiObjectContext>();
         RegisterClassValueContext<PaladinAiObjectContext>();
@@ -77,7 +80,15 @@ public:
         RegisterClassValueContext<WarlockAiObjectContext>();
         RegisterClassValueContext<DruidAiObjectContext>();
 
-        LOG_INFO("server.loading", "[mod-playerbots-bis] Active - BiS ladder governs bot gear and loot rolls");
+        if (sBisPriorityMgr->IsEnabled())
+            LOG_INFO("server.loading",
+                     "[mod-playerbots-bis] Active - BiS ladder governs bot gear and loot rolls ({} tiers, {} items)",
+                     static_cast<uint32>(sBisPriorityMgr->TierCount()),
+                     static_cast<uint32>(sBisPriorityMgr->ItemCount()));
+        else
+            LOG_INFO("server.loading",
+                     "[mod-playerbots-bis] Dormant (PlayerbotsBis.Enable = 0) - set it to 1 and run "
+                     "\".playerbotsbis reload\" to activate without a restart");
     }
 
 private:
