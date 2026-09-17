@@ -128,11 +128,17 @@ Les lignes fournies sont converties depuis la table `playerbots_bis_gear` de
 mod-playerbots — identifiants et noms d'objets d'origine — réparties sur l'échelle de
 paliers. `tools/convert_playerbots_bis_gear.py` permet de régénérer le fichier.
 
+Le palier 10 (Vanilla Pre-Raid) est fourni à part, dans
+`03_vanilla_preraid.sql`. Ce fichier ne code aucun identifiant en dur : il résout chaque
+objet **par nom** contre `item_template` au moment de l'import. Un nom erroné n'insère
+rien plutôt que de faire équiper n'importe quoi, et la requête de vérification en fin de
+fichier liste les noms non résolus. C'est le format à suivre pour contribuer une liste.
+
 **Ce jeu de données est un point de départ, pas une liste BiS de référence.** Lacunes
 connues :
 
-- Paliers vides : Vanilla Pre-Raid (10), Zul'Gurub (40), AQ20 (50), WotLK Pre-Raid (130),
-  Ruby Sanctum (180).
+- Paliers vides : Zul'Gurub (40), AQ20 (50), WotLK Pre-Raid (130), Ruby Sanctum (180).
+- Palier 10 (Vanilla Pre-Raid) : Guerrier Fureur uniquement pour l'instant.
 - Sur les quatre paliers Vanilla renseignés, aucune ligne pour : Guerrier Armes, Voleur
   Assassinat, Voleur Subtilité, Prêtre Discipline.
 
