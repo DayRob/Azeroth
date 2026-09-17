@@ -49,6 +49,7 @@ void BisPriorityMgr::LoadTables()
 {
     _tiers.clear();
     _items.clear();
+    _minTierByCombo.clear();
     _itemCount = 0;
     _loaded = false;
 
@@ -106,7 +107,12 @@ void BisPriorityMgr::LoadTables()
 
         // Faction rows are stored alongside the neutral ones; the lookup below
         // reads the neutral map first and lets the faction map override it.
-        auto& bucket = _items[MakeKey(cls, spec, faction)];
+        uint32 const comboKey = MakeKey(cls, spec, faction);
+        auto& bucket = _items[comboKey];
+
+        auto minIt = _minTierByCombo.find(comboKey);
+        if (minIt == _minTierByCombo.end() || tierId < minIt->second)
+            _minTierByCombo[comboKey] = tierId;
 
         // Keep the strongest row when the same item appears twice for a combo.
         auto existing = bucket.find(itemId);
@@ -148,7 +154,16 @@ bool BisPriorityMgr::AppliesTo(Player* bot)
     if (!GET_PLAYERBOT_AI(bot))
         return false;
 
-    if (_minLevel && bot->GetLevel() < _minLevel)
+    // A list holds level-cap gear for its tier, so a levelling bot must keep the
+    // original logic or it would be barred from equipping anything at all.
+    // MinLevel = 0 means "playerbots' own RandomBotMaxLevel".
+    uint32 const minLevel = _minLevel ? _minLevel : sPlayerbotAIConfig.randomBotMaxLevel;
+    if (minLevel && bot->GetLevel() < minLevel)
+        return false;
+
+    // No list for this class/spec at the current cap: leave the bot alone rather
+    // than blocking every item as "off-list".
+    if (!HasListFor(bot))
         return false;
 
     if (sRandomPlayerbotMgr.IsRandomBot(bot))
@@ -158,6 +173,23 @@ bool BisPriorityMgr::AppliesTo(Player* bot)
         return _applyToAddClassBots;
 
     return _applyToAltBots;
+}
+
+bool BisPriorityMgr::HasListFor(Player* bot)
+{
+    uint8 const cls = bot->getClass();
+    uint8 const spec = ResolveSpec(bot);
+    uint8 const faction = bot->GetTeamId() == TEAM_ALLIANCE ? 1 : 2;
+    uint16 const cap = GetEffectiveTierCap(bot);
+
+    for (uint8 f : {uint8(0), faction})
+    {
+        auto it = _minTierByCombo.find(MakeKey(cls, spec, f));
+        if (it != _minTierByCombo.end() && it->second <= cap)
+            return true;
+    }
+
+    return false;
 }
 
 uint8 BisPriorityMgr::GetProgressionLevel(Player* bot)

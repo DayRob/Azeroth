@@ -50,8 +50,14 @@ public:
     bool IsEnabled() const { return _enabled; }
     bool BlockOffListRolls() const { return _blockOffListRolls; }
 
-    // True when this bot's itemisation is governed by the BiS ladder.
+    // True when this bot's itemisation is governed by the BiS ladder. False when
+    // the feature is off, the bot is the wrong type or too low level, OR its
+    // class/spec has no list at the current tier cap - in that last case the bot
+    // keeps playerbots' own logic rather than being frozen out of every item.
     bool AppliesTo(Player* bot);
+
+    // True when the bot's class/spec has at least one row at or below the cap.
+    bool HasListFor(Player* bot);
 
     // Priority of itemId for this bot's class/spec, or 0 when the item is not on
     // the bot's list (wrong spec, unknown item, or tier above the current cap).
@@ -89,6 +95,9 @@ private:
     std::unordered_map<uint16, BisTier> _tiers;
     // (cls<<16|spec<<8|faction) -> itemId -> entry
     std::unordered_map<uint32, std::unordered_map<uint32, BisItem>> _items;
+    // (cls<<16|spec<<8|faction) -> lowest tier present, so an empty or
+    // out-of-reach list is detected without scanning the bucket.
+    std::unordered_map<uint32, uint16> _minTierByCombo;
     size_t _itemCount = 0;
     bool _loaded = false;
 

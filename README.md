@@ -142,8 +142,10 @@ connues :
 - Sur les quatre paliers Vanilla renseignés, aucune ligne pour : Guerrier Armes, Voleur
   Assassinat, Voleur Subtilité, Prêtre Discipline.
 
-Une spé sans aucune ligne au palier courant retombe proprement sur la logique d'origine
-de mod-playerbots — le bot n'est jamais laissé nu.
+Une spé sans aucune ligne au palier courant retombe sur la logique d'origine de
+mod-playerbots : `BisPriorityMgr::AppliesTo()` renvoie false quand aucune ligne n'existe
+pour la combinaison classe/spé, donc le bot n'est jamais bloqué faute de liste. Même
+garde-fou pour les bots sous `MinLevel`.
 
 Après édition des tables, `.playerbotsbis reload` les recharge sans redémarrer. La même
 commande prend aussi en compte un changement de `PlayerbotsBis.Enable` ou de

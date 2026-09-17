@@ -27,11 +27,16 @@ PlayerbotsBis.ApplyToAddClassBots = 0
 PlayerbotsBis.ApplyToAltBots = 0
 
 # Niveau minimum d'un bot pour etre gouverne. Les listes BiS ne contiennent que du
-# stuff de palier, donc un bot en cours de leveling doit garder la logique d'origine
-# sous peine de ne rien avoir a se mettre.
-# 0 = pas de minimum (le module s'applique a tout niveau)
+# stuff de niveau max, donc un bot en cours de leveling DOIT garder la logique
+# d'origine : sinon chaque objet qu'il ramasse est "hors liste" et il ne s'equipe
+# plus de rien.
+# 0 = reprend AiPlayerbot.RandomBotMaxLevel (60 sur un serveur Vanilla, 80 en WotLK)
 # Defaut : 0
 PlayerbotsBis.MinLevel = 0
+
+# Note : une classe/spe sans aucune ligne dans playerbots_bis_item au palier courant
+# est laissee a la logique d'origine de mod-playerbots, meme si tout le reste est
+# active. Le module ne bloque jamais un bot qu'il ne sait pas habiller.
 
 # Un objet absent de la liste de la classe/spe du bot ne peut plus etre equipe ni
 # rolle : le bot PASS dessus. Les verdicts vendeur / hotel des ventes / desenchantement
