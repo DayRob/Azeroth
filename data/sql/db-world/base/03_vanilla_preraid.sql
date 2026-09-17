@@ -13,7 +13,8 @@
 -- meilleure ligne qu'il possede. Un palier superieur bat toujours ce palier-ci.
 --
 -- Source : guides Best-in-Slot Pre-Raid de Wowhead Classic.
--- Contenu actuel : Guerrier Fureur (classe 1, spe 1).
+-- Contenu actuel : Guerrier Fureur (classe 1, spe 1), 56 lignes, toutes verifiees
+-- contre item_template sur un serveur AzerothCore reel.
 
 DROP TEMPORARY TABLE IF EXISTS `bis_seed`;
 CREATE TEMPORARY TABLE `bis_seed` (
@@ -66,9 +67,9 @@ INSERT INTO `bis_seed` (`class`, `spec`, `slot`, `faction`, `rank`, `item_name`)
 (1, 1,  7, 0, 1, 'Boots of Heroism'),
 (1, 1,  7, 0, 2, 'Black Dragonscale Boots'),
 (1, 1,  7, 0, 3, 'Battlechaser''s Greaves'),
-(1, 1,  7, 0, 3, 'Shadowy Boots'),
+(1, 1,  7, 0, 3, 'Shadefiend Boots'),
 -- Poignets (8)
-(1, 1,  8, 0, 1, 'Bracers of the Sadist'),
+(1, 1,  8, 0, 1, 'Vambraces of the Sadist'),
 (1, 1,  8, 0, 1, 'Battleborn Armbraces'),
 (1, 1,  8, 0, 2, 'Wristguards of Renown'),
 -- Mains (9)
@@ -96,7 +97,7 @@ INSERT INTO `bis_seed` (`class`, `spec`, `slot`, `faction`, `rank`, `item_name`)
 (1, 1, 15, 0, 2, 'Rivenspike'),
 (1, 1, 15, 0, 2, 'Axe of the Deep Woods'),
 (1, 1, 15, 0, 3, 'Assassination Blade'),
-(1, 1, 15, 0, 3, 'McGowan''s Mace'),
+(1, 1, 15, 0, 3, 'Mass of McGowan'),
 -- Main gauche (16)
 (1, 1, 16, 0, 1, 'Dal''Rend''s Tribal Guardian'),
 (1, 1, 16, 0, 2, 'Bone Slicing Hatchet'),
