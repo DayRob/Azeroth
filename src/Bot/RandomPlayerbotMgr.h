@@ -130,6 +130,9 @@ public:
     void SetTradeDiscount(Player* bot, Player* master, uint32 value);
     uint32 GetTradeDiscount(Player* bot, Player* master);
     void Refresh(Player* bot);
+    // Applies the strict BiS list to a bot without touching its level, talents or skills.
+    // Backs the ".playerbots rndbot bis" command.
+    void ApplyStrictBis(Player* bot);
     void RandomTeleportForLevel(Player* bot);
     void RandomTeleportGrindForLevel(Player* bot);
     void RandomTeleportForRpg(Player* bot);

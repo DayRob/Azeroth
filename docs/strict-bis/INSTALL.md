@@ -88,6 +88,7 @@ C'est aussi l'étape qui valide le code : il n'a pas été compilé à l'écritu
 | `src/Ai/Base/Value/ItemUsageValue.cpp` | verdict équiper/roll basé sur la liste |
 | `src/Ai/Base/Actions/LootRollAction.cpp` | PASS sur les jetons de tier |
 | `src/Ai/Base/Actions/AutoMaintenanceOnLevelupAction.cpp` | ré-application au levelup |
+| `src/Bot/RandomPlayerbotMgr.{h,cpp}` | commande `.playerbots rndbot bis` (application sans reset) |
 | `src/PlayerbotAIConfig.{h,cpp}` | 5 nouvelles options |
 | `conf/playerbots.conf.dist` | documentation des options |
 
@@ -151,19 +152,27 @@ Laisse tel quel (déjà compatible) : `EquipAndSpecPersistence = 1`, `AutoUpgrad
 
 ---
 
-## Étape 5 — Redémarrer et forcer la ré-application
+## Étape 5 — Redémarrer et appliquer
 
 ```
-# dans la console worldserver, ou en jeu en GM :
-.playerbots rndbot init
+# console worldserver, ou en jeu en GM :
+.playerbots rndbot bis
 ```
 
-`init` lance un `RandomizeFirst` (randomize complet) sur **tous les randombots connectés**, ce qui
-déclenche `ApplyStrictBisEquipment`. Pour un seul bot : `.playerbots rndbot init NomDuBot`.
+Cette commande (ajoutée par ce fork) applique la liste BiS aux randombots connectés **sans toucher
+à leur niveau, leurs talents, leurs skills ni leur or**. Pour un seul bot :
+`.playerbots rndbot bis NomDuBot`.
 
-Sans cette commande, les bots déjà en jeu ne basculeront que lors de leur prochaine
-re-randomisation périodique (entre `MinRandomBotRandomizeTime` = 2 h et
-`MaxRandomBotRandomizeTime` = 14 j chez toi).
+> ### ⚠️ N'utilise PAS `.playerbots rndbot init`
+>
+> `init` appelle `RandomizeFirst`, qui **retire le niveau** des bots. Avec ta configuration
+> (`DisableRandomLevels = 1` et `RandombotStartingLevel = 1`), il remet **tous tes randombots au
+> niveau 1** et vide leur inventaire. C'est le comportement normal du module — la conf le signale
+> d'ailleurs : *« Warning: Reinitializing bots completely resets them »* — mais ça détruit
+> exactement la progression que tu veux garder.
+
+Sans commande, les bots basculent d'eux-mêmes lors de leur prochaine re-randomisation périodique,
+entre `MinRandomBotRandomizeTime` (2 h) et `MaxRandomBotRandomizeTime` (14 j chez toi).
 
 ---
 
@@ -254,7 +263,8 @@ VALUES
 AiPlayerbot.RandomBotStrictBis = 0
 ```
 
-puis `.playerbots rndbot reload` (relit la conf sans redémarrer) et `.playerbots rndbot init`.
+puis `.playerbots rndbot reload` (relit la conf sans redémarrer). Les bots gardent l'équipement BiS
+déjà posé jusqu'à leur prochaine re-randomisation, qui repassera par la logique normale.
 Pour revenir à mod-playerbots d'origine : supprime `modules/mod-playerbots-strict-bis`, reclone
 `https://github.com/mod-playerbots/mod-playerbots` dans `modules/mod-playerbots`, puis `cmake ..` +
 recompilation. Ta conf garde les options `RandomBotStrictBis*`, qui seront simplement ignorées.

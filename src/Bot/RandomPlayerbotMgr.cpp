@@ -2141,6 +2141,26 @@ uint32 RandomPlayerbotMgr::GetZoneLevel(uint16 mapId, float teleX, float teleY, 
     return level;
 }
 
+void RandomPlayerbotMgr::ApplyStrictBis(Player* bot)
+{
+    if (!bot || !GET_PLAYERBOT_AI(bot))
+        return;
+
+    if (bot->InBattleground())
+        return;
+
+    if (!PlayerbotFactory::ApplyStrictBisEquipment(bot))
+    {
+        LOG_DEBUG("playerbots", "Strict BiS: nothing to apply for bot <{}> (feature off, level too low, "
+                                "PvP spec, or no list for its class/spec at the configured tier)",
+                  bot->GetName().c_str());
+        return;
+    }
+
+    bot->DurabilityRepairAll(false, 1.0f, false);
+    LOG_INFO("playerbots", "Strict BiS applied to bot <{}>", bot->GetName().c_str());
+}
+
 void RandomPlayerbotMgr::Refresh(Player* bot)
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
@@ -2460,7 +2480,7 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* /*handler*/,
 
     if (!args || !*args)
     {
-        LOG_ERROR("playerbots", "Usage: rndbot stats/update/reset/init/refresh/add/remove");
+        LOG_ERROR("playerbots", "Usage: rndbot stats/update/reset/init/refresh/bis/add/remove");
         return false;
     }
 
@@ -2499,6 +2519,7 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* /*handler*/,
     handlers["clear"] = &RandomPlayerbotMgr::Clear;
     handlers["levelup"] = handlers["level"] = &RandomPlayerbotMgr::IncreaseLevel;
     handlers["refresh"] = &RandomPlayerbotMgr::Refresh;
+    handlers["bis"] = &RandomPlayerbotMgr::ApplyStrictBis;
     handlers["teleport"] = &RandomPlayerbotMgr::RandomTeleportForLevel;
     // handlers["rpg"] = &RandomPlayerbotMgr::RandomTeleportForRpg;
     handlers["revive"] = &RandomPlayerbotMgr::Revive;
