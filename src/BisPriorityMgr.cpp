@@ -54,7 +54,8 @@ void BisPriorityMgr::LoadTables()
     _loaded = false;
 
     QueryResult tierResult = WorldDatabase.Query(
-        "SELECT tier_id, expansion, name, required_progression FROM playerbots_bis_tier ORDER BY tier_id");
+        "SELECT `tier_id`, `expansion`, `name`, `required_progression` "
+        "FROM `playerbots_bis_tier` ORDER BY `tier_id`");
     if (!tierResult)
     {
         LOG_ERROR("server.loading", "[mod-playerbots-bis] playerbots_bis_tier is missing or empty - module inactive");
@@ -73,7 +74,11 @@ void BisPriorityMgr::LoadTables()
     } while (tierResult->NextRow());
 
     QueryResult itemResult = WorldDatabase.Query(
-        "SELECT class, spec, slot, faction, tier_id, item_id, rank FROM playerbots_bis_item");
+        // Every identifier is back-quoted: `rank` is a reserved word from MySQL 8
+        // onward (the RANK() window function), and an unquoted one aborts the
+        // whole statement with error 1064.
+        "SELECT `class`, `spec`, `slot`, `faction`, `tier_id`, `item_id`, `rank` "
+        "FROM `playerbots_bis_item`");
     if (!itemResult)
     {
         LOG_WARN("server.loading", "[mod-playerbots-bis] playerbots_bis_item is empty - no bot will be governed");
