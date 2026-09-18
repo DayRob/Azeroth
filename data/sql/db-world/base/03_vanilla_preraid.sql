@@ -13,7 +13,7 @@
 -- meilleure ligne qu'il possede. Un palier superieur bat toujours ce palier-ci.
 --
 -- Source : guides Best-in-Slot Pre-Raid de Wowhead Classic.
--- Contenu actuel : Guerrier Fureur (1/1), Paladin Sacre (2/0),
+-- Contenu actuel : Guerrier Armes (1/0), Guerrier Fureur (1/1), Paladin Sacre (2/0),
 -- Chasseur (3/0,1,2), Voleur (4/0,1,2), Pretre soin (5/0,1)
 -- contre item_template sur un serveur AzerothCore reel.
 
@@ -654,6 +654,81 @@ INSERT INTO `bis_seed` (`class`, `spec`, `slot`, `faction`, `rank`, `item_name`)
 (2, 0, 16, 0, 3, 'Tome of Divine Right'),
 (2, 0, 16, 0, 3, 'Thaurissan''s Royal Scepter'),
 (2, 0, 17, 0, 1, 'Libram of Divinity');
+
+-- =====================================================================
+-- Guerrier Armes (classe 1, spe 0).
+--
+-- Wowhead ne publie AUCUN guide pre-raid Armes pour Vanilla : en 1.12 la spe
+-- DPS de raid du guerrier est Fureur, et Armes ne sert qu'en PvP. Cette liste
+-- n'est donc pas issue d'une page de guide.
+--
+-- Pourquoi ne pas simplement laisser Armes sans liste : sans ligne a son nom,
+-- un bot Armes tombe en branche 2 sur TOUS les objets, et comme le BiS de
+-- Fureur appartient a une autre spe (1/1 contre 1/0), il le laisse activement
+-- aux autres. Un guerrier Armes finirait le plus mal equipe du serveur.
+--
+-- L'armure et les bijoux sont donc repris tels quels de la liste Fureur : en
+-- Vanilla les deux spes veulent exactement les memes statistiques sur les memes
+-- pieces de plaques. Seules les ARMES changent : Armes veut une deux-mains
+-- lente, la ou Fureur porte deux une-main. L'emplacement 16 (main gauche) est
+-- donc volontairement vide, une deux-mains occupant les deux mains.
+--
+-- Les deux-mains ci-dessous ne viennent pas d'un guide mais du consensus
+-- Vanilla habituel. La requete de verification d'emplacement en fin de fichier
+-- signalera toute entree qui ne serait pas reellement une deux-mains.
+-- =====================================================================
+INSERT INTO `bis_seed` (`class`, `spec`, `slot`, `faction`, `rank`, `item_name`) VALUES
+(1, 0,  0, 0, 1, 'Lionheart Helm'),
+(1, 0,  0, 0, 2, 'Helm of the Executioner'),
+(1, 0,  0, 0, 3, 'Eye of Rend'),
+(1, 0,  0, 0, 3, 'Mask of the Unforgiven'),
+(1, 0,  1, 0, 1, 'Mark of Fordring'),
+(1, 0,  1, 0, 2, 'Pendant of Celerity'),
+(1, 0,  1, 0, 3, 'Imperial Jewel'),
+(1, 0,  2, 0, 1, 'Truestrike Shoulders'),
+(1, 0,  2, 0, 1, 'Black Dragonscale Shoulders'),
+(1, 0,  2, 0, 3, 'Wyrmhide Spaulders'),
+(1, 0,  4, 0, 1, 'Savage Gladiator Chain'),
+(1, 0,  4, 0, 2, 'Cadaverous Armor'),
+(1, 0,  4, 0, 2, 'Tombstone Breastplate'),
+(1, 0,  4, 0, 2, 'Deathdealer Breastplate'),
+(1, 0,  5, 0, 1, 'Omokk''s Girth Restrainer'),
+(1, 0,  5, 0, 1, 'Brigam Girdle'),
+(1, 0,  5, 0, 2, 'Cloudrunner Girdle'),
+(1, 0,  6, 0, 1, 'Devilsaur Leggings'),
+(1, 0,  6, 0, 1, 'Eldritch Reinforced Legplates'),
+(1, 0,  6, 0, 1, 'Black Dragonscale Leggings'),
+(1, 0,  6, 0, 2, 'Cloudkeeper Legplates'),
+(1, 0,  7, 0, 1, 'Boots of Heroism'),
+(1, 0,  7, 0, 2, 'Black Dragonscale Boots'),
+(1, 0,  7, 0, 3, 'Battlechaser''s Greaves'),
+(1, 0,  7, 0, 3, 'Shadefiend Boots'),
+(1, 0,  8, 0, 1, 'Vambraces of the Sadist'),
+(1, 0,  8, 0, 1, 'Battleborn Armbraces'),
+(1, 0,  8, 0, 2, 'Wristguards of Renown'),
+(1, 0,  9, 0, 1, 'Edgemaster''s Handguards'),
+(1, 0,  9, 0, 1, 'Devilsaur Gauntlets'),
+(1, 0,  9, 0, 1, 'Gauntlets of Heroism'),
+(1, 0,  9, 0, 3, 'Gargoyle Slashers'),
+(1, 0, 10, 0, 1, 'Painweaver Band'),
+(1, 0, 10, 0, 1, 'Blackstone Ring'),
+(1, 0, 10, 0, 2, 'Tarnished Elven Ring'),
+(1, 0, 12, 0, 1, 'Diamond Flask'),
+(1, 0, 12, 0, 1, 'Blackhand''s Breadth'),
+(1, 0, 12, 0, 1, 'Hand of Justice'),
+(1, 0, 12, 2, 2, 'Rune of the Guard Captain'),   -- Horde uniquement
+(1, 0, 14, 0, 1, 'Cape of the Black Baron'),
+(1, 0, 14, 0, 2, 'Blackveil Cape'),
+(1, 0, 14, 0, 3, 'Shroud of Domination'),
+(1, 0, 17, 0, 1, 'Satyr''s Bow'),
+(1, 0, 17, 0, 2, 'Blackcrow'),
+(1, 0, 17, 0, 3, 'Riphook'),
+(1, 0, 15, 0, 1, 'Arcanite Reaper'),
+(1, 0, 15, 0, 1, 'The Unstoppable Force'),
+(1, 0, 15, 0, 2, 'Corpsemaker'),
+(1, 0, 15, 0, 2, 'Skullforge Reaver'),
+(1, 0, 15, 0, 3, 'Ice Barbed Spear'),
+(1, 0, 15, 0, 3, 'Sceptre of Smiting');
 
 -- Resolution des noms -> item_template.entry.
 -- MIN(entry) departage les rares homonymes d'item_template.
