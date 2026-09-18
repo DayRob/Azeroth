@@ -13,8 +13,8 @@
 -- meilleure ligne qu'il possede. Un palier superieur bat toujours ce palier-ci.
 --
 -- Source : guides Best-in-Slot Pre-Raid de Wowhead Classic.
--- Contenu actuel : Guerrier Fureur (1/1), Chasseur (3/0,1,2), Voleur (4/0,1,2),
--- Pretre soin (5/0,1)
+-- Contenu actuel : Guerrier Fureur (1/1), Paladin Sacre (2/0),
+-- Chasseur (3/0,1,2), Voleur (4/0,1,2), Pretre soin (5/0,1)
 -- contre item_template sur un serveur AzerothCore reel.
 
 DROP TEMPORARY TABLE IF EXISTS `bis_seed`;
@@ -588,6 +588,73 @@ INSERT INTO `bis_seed` (`class`, `spec`, `slot`, `faction`, `rank`, `item_name`)
 (4, 1, 12, 2, 3, 'Rune of the Guard Captain'),
 (4, 2, 12, 2, 3, 'Rune of the Guard Captain');
 
+-- =====================================================================
+-- Paladin Sacre (classe 2, spe 0) - soigneur.
+--
+-- Le libram va sur l'emplacement 17 (l'emplacement "distance" d'AzerothCore,
+-- qui accueille aussi les reliques de paladin, druide, chaman et chevalier).
+--
+-- Rangs de la page : Best -> 1, Optional -> 3. Exception a la ceinture :
+-- Sash of Mercy est le vrai BiS mais c'est un drop monde aleatoire, donc le
+-- guide batit son set d'exemple avec Whipvine Cord. On garde donc Sash of Mercy
+-- en 1 et on remonte Whipvine Cord en 2 : le bot portera Whipvine Cord en
+-- pratique, et basculera tout seul s'il met la main sur la Sash.
+--
+-- "Uncommon Legs of Healing" n'est pas importe : c'est un drop monde a suffixe
+-- aleatoire, il n'a pas de nom fixe resolvable dans item_template.
+-- =====================================================================
+INSERT INTO `bis_seed` (`class`, `spec`, `slot`, `faction`, `rank`, `item_name`) VALUES
+(2, 0,  0, 0, 1, 'Insightful Hood'),
+(2, 0,  0, 0, 3, 'Whitesoul Helm'),
+(2, 0,  0, 0, 3, 'Tribal War Feathers'),
+(2, 0,  1, 0, 1, 'Animated Chain Necklace'),
+(2, 0,  1, 0, 3, 'Amulet of the Redeemed'),
+(2, 0,  1, 0, 3, 'Tooth of Gnarr'),
+(2, 0,  2, 0, 1, 'Royal Cap Spaulders'),
+(2, 0,  2, 0, 3, 'Living Shoulders'),
+(2, 0,  2, 0, 3, 'Burial Shawl'),
+(2, 0,  4, 0, 1, 'Robes of the Exalted'),
+(2, 0,  4, 0, 3, 'Red Dragonscale Breastplate'),
+(2, 0,  4, 0, 3, 'Chestplate of Tranquility'),
+(2, 0,  5, 0, 1, 'Sash of Mercy'),
+(2, 0,  5, 0, 2, 'Whipvine Cord'),
+(2, 0,  5, 0, 3, 'Belt of the Ordained'),
+(2, 0,  6, 0, 1, 'Padre''s Trousers'),
+(2, 0,  6, 0, 3, 'Senior Designer''s Pantaloons'),
+(2, 0,  7, 0, 1, 'Boots of the Full Moon'),
+(2, 0,  7, 0, 3, 'Verdant Footpads'),
+(2, 0,  7, 0, 3, 'Merciful Greaves'),
+(2, 0,  8, 0, 1, 'Gallant''s Wristguards'),
+(2, 0,  8, 0, 3, 'Loomguard Armbraces'),
+(2, 0,  8, 0, 3, 'Bracers of Prosperity'),
+(2, 0,  9, 0, 1, 'Harmonious Gauntlets'),
+(2, 0,  9, 0, 3, 'Atal''ai Gloves'),
+(2, 0,  9, 0, 3, 'Gloves of Restoration'),
+(2, 0, 10, 0, 1, 'Fordring''s Seal'),
+(2, 0, 11, 0, 1, 'Fordring''s Seal'),
+(2, 0, 10, 0, 1, 'Rosewine Circle'),
+(2, 0, 11, 0, 1, 'Rosewine Circle'),
+(2, 0, 10, 0, 3, 'Band of Mending'),
+(2, 0, 11, 0, 3, 'Band of Mending'),
+(2, 0, 10, 0, 3, 'Emerald Flame Ring'),
+(2, 0, 11, 0, 3, 'Emerald Flame Ring'),
+(2, 0, 12, 0, 1, 'Briarwood Reed'),
+(2, 0, 13, 0, 1, 'Briarwood Reed'),
+(2, 0, 12, 0, 1, 'Second Wind'),
+(2, 0, 13, 0, 1, 'Second Wind'),
+(2, 0, 12, 0, 3, 'Royal Seal of Eldre''Thalas'),
+(2, 0, 13, 0, 3, 'Royal Seal of Eldre''Thalas'),
+(2, 0, 14, 0, 1, 'Hide of the Wild'),
+(2, 0, 14, 0, 3, 'Cloak of the Cosmos'),
+(2, 0, 14, 0, 3, 'Archivist Cape'),
+(2, 0, 15, 0, 1, 'The Hammer of Grace'),
+(2, 0, 15, 0, 3, 'Hammer of Revitalization'),
+(2, 0, 15, 0, 3, 'Energetic Rod'),
+(2, 0, 16, 0, 1, 'Brightly Glowing Stone'),
+(2, 0, 16, 0, 3, 'Tome of Divine Right'),
+(2, 0, 16, 0, 3, 'Thaurissan''s Royal Scepter'),
+(2, 0, 17, 0, 1, 'Libram of Divinity');
+
 -- Resolution des noms -> item_template.entry.
 -- MIN(entry) departage les rares homonymes d'item_template.
 INSERT IGNORE INTO `playerbots_bis_item`
@@ -608,5 +675,42 @@ FROM `bis_seed` s
 LEFT JOIN `item_template` it
   ON it.`name` COLLATE utf8mb4_general_ci = s.`item_name` COLLATE utf8mb4_general_ci
 WHERE it.`entry` IS NULL;
+
+-- ---------------------------------------------------------------------
+-- VERIFICATION 2 - coherence de l'emplacement.
+-- Un nom peut tres bien exister tout en etant range dans le mauvais
+-- emplacement (une arme notee en main gauche alors qu'elle est en main droite,
+-- par exemple). Le module cherche l'objet par emplacement : si l'emplacement
+-- declare ici ne correspond pas a celui de l'objet, la ligne ne servira jamais.
+-- Toute ligne renvoyee par cette requete est a corriger.
+--
+-- Correspondance InventoryType d'item_template -> emplacement :
+--   1 tete | 2 cou | 3 epaules | 5,20 torse | 6 taille | 7 jambes | 8 pieds
+--   9 poignets | 10 mains | 11 doigt | 12 bijou | 16 dos
+--   13 une-main | 17 deux-mains | 21 main droite | 22,23 main gauche
+--   14 bouclier | 15,25,26 distance | 28 relique
+-- ---------------------------------------------------------------------
+SELECT s.`class`, s.`spec`, s.`slot` AS emplacement_declare,
+       it.`InventoryType` AS emplacement_reel, s.`item_name`
+FROM `bis_seed` s
+JOIN `item_template` it
+  ON it.`name` COLLATE utf8mb4_general_ci = s.`item_name` COLLATE utf8mb4_general_ci
+WHERE NOT (
+       (s.`slot` =  0 AND it.`InventoryType` = 1)
+    OR (s.`slot` =  1 AND it.`InventoryType` = 2)
+    OR (s.`slot` =  2 AND it.`InventoryType` = 3)
+    OR (s.`slot` =  4 AND it.`InventoryType` IN (5, 20))
+    OR (s.`slot` =  5 AND it.`InventoryType` = 6)
+    OR (s.`slot` =  6 AND it.`InventoryType` = 7)
+    OR (s.`slot` =  7 AND it.`InventoryType` = 8)
+    OR (s.`slot` =  8 AND it.`InventoryType` = 9)
+    OR (s.`slot` =  9 AND it.`InventoryType` = 10)
+    OR (s.`slot` IN (10, 11) AND it.`InventoryType` = 11)
+    OR (s.`slot` IN (12, 13) AND it.`InventoryType` = 12)
+    OR (s.`slot` = 14 AND it.`InventoryType` = 16)
+    OR (s.`slot` = 15 AND it.`InventoryType` IN (13, 17, 21))
+    OR (s.`slot` = 16 AND it.`InventoryType` IN (13, 14, 22, 23))
+    OR (s.`slot` = 17 AND it.`InventoryType` IN (15, 25, 26, 28))
+);
 
 DROP TEMPORARY TABLE IF EXISTS `bis_seed`;
