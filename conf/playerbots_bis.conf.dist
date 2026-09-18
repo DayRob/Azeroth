@@ -26,25 +26,23 @@ PlayerbotsBis.ApplyToRandomBots = 1
 PlayerbotsBis.ApplyToAddClassBots = 0
 PlayerbotsBis.ApplyToAltBots = 0
 
-# Niveau minimum d'un bot pour etre gouverne. Les listes BiS ne contiennent que du
-# stuff de niveau max, donc un bot en cours de leveling DOIT garder la logique
-# d'origine : sinon chaque objet qu'il ramasse est "hors liste" et il ne s'equipe
-# plus de rien.
-# 0 = reprend AiPlayerbot.RandomBotMaxLevel (60 sur un serveur Vanilla, 80 en WotLK)
-# Defaut : 0
-PlayerbotsBis.MinLevel = 0
-
-# Note : une classe/spe sans aucune ligne dans playerbots_bis_item au palier courant
-# est laissee a la logique d'origine de mod-playerbots, meme si tout le reste est
-# active. Le module ne bloque jamais un bot qu'il ne sait pas habiller.
-
-# Un objet absent de la liste de la classe/spe du bot ne peut plus etre equipe ni
-# rolle : le bot PASS dessus. Les verdicts vendeur / hotel des ventes / desenchantement
-# ne sont pas touches, le bot continue de gerer sainement ce qu'il ramasse.
-# A 0, seuls les objets BiS gagnent en priorite, mais le bot peut toujours rouler sur
-# une amelioration hors liste selon la logique d'origine.
+# Un objet qui est le BiS d'une AUTRE classe/spe est laisse a qui il revient :
+# le bot PASS dessus au lieu de le rouler comme une simple amelioration.
+# A 0, il applique la logique d'origine sur ces objets-la.
 # Defaut : 1 (active)
-PlayerbotsBis.BlockOffListRolls = 1
+PlayerbotsBis.LeaveOtherSpecsBis = 1
+
+# Quand un bot reconnait SON propre BiS, il l'annonce a son maitre avant de
+# rouler dessus : "<objet> - c'est mon BiS (Vanilla Phase 1 - Molten Core / Onyxia)".
+# Sans maitre, rien n'est dit : aucun risque de spam avec des centaines de bots.
+# Defaut : 1 (active)
+PlayerbotsBis.AnnounceOwnBis = 1
+
+# Note : il n'y a PAS de niveau minimum. La couche BiS s'ajoute a la logique
+# d'origine de mod-playerbots au lieu de la remplacer, donc un bot de niveau 20
+# continue de s'equiper normalement ; il reconnait simplement son BiS quand il en
+# croise un. Une classe/spe absente des tables garde integralement la logique
+# d'origine.
 
 # Palier maximum que les bots peuvent viser, tel que defini dans playerbots_bis_tier.
 # C'est le reglage a utiliser pour caler tes bots sur la phase courante de ton serveur.

@@ -10,6 +10,8 @@
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
+#include <sstream>
+#include <string>
 
 namespace
 {
@@ -27,15 +29,19 @@ namespace
         }
     }
 
-    bool IsEquipVerdict(ItemUsage usage)
-    {
-        return usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP ||
-               usage == ITEM_USAGE_BROKEN_EQUIP;
-    }
-
-    // Shared policy for both values. `base` is whatever playerbots would have
-    // answered; this only ever narrows it for gear.
-    ItemUsage ApplyBisPolicy(Player* bot, uint32 itemId, ItemUsage base)
+    // The BiS layer, applied on top of whatever playerbots already decided.
+    //
+    // Three branches, in order:
+    //   1. the item is this bot's best in slot  -> announce it and take it
+    //   2. it is somebody else's best in slot   -> leave it to them
+    //   3. it belongs to no list                -> playerbots' own verdict stands
+    //
+    // Branch 3 is the common case and is exactly the original behaviour: the
+    // stat-weight comparison against the equipped item, with its 1.1x threshold.
+    // This layer only ever overrides that verdict for items the lists know, at
+    // any level - a level 30 bot recognises its level 60 best in slot just as
+    // well as a capped one.
+    ItemUsage ApplyBisPolicy(PlayerbotAI* botAI, Player* bot, uint32 itemId, ItemUsage base)
     {
         if (!sBisPriorityMgr->AppliesTo(bot))
             return base;
@@ -44,26 +50,32 @@ namespace
         if (!proto)
             return base;
 
-        // Only gear is arbitrated by the ladder.
+        // Only gear is arbitrated. Quest items, ammo, reagents, consumables and
+        // every vendor / auction / disenchant verdict pass through untouched.
         if (proto->Class != ITEM_CLASS_WEAPON && proto->Class != ITEM_CLASS_ARMOR)
             return base;
 
         uint8 slot = 0;
-        uint32 const priority = sBisPriorityMgr->GetItemPriority(bot, itemId, &slot);
+        uint16 tierId = 0;
+        uint32 const priority = sBisPriorityMgr->GetItemPriority(bot, itemId, &slot, &tierId);
 
+        // ── Branch 2 ──────────────────────────────────────────────────────────
         if (!priority)
         {
-            // Not on this spec's list. Never equipped, never rolled for; the
-            // vendor / auction / disenchant verdicts are left untouched so the
-            // bot still handles the item sensibly once it owns it.
-            if (sBisPriorityMgr->BlockOffListRolls() && IsEquipVerdict(base))
+            if (sBisPriorityMgr->LeaveOtherSpecsBis() && sBisPriorityMgr->IsBisForAnotherSpec(bot, itemId))
                 return ITEM_USAGE_NONE;
 
-            return base;
+            return base;  // ── Branch 3: nobody's list, original logic wins
         }
 
-        // On the list. Compare against the slot it targets, and for rings and
-        // trinkets against the weaker half of the pair.
+        // ── Branch 1 ──────────────────────────────────────────────────────────
+        // Wanting an item the bot cannot physically wear would make it roll on
+        // something it can never equip, so the class/race/skill/level gate is
+        // re-checked here: the forced verdict below bypasses the one playerbots
+        // applies upstream.
+        if (bot->BotCanUseItem(proto) != EQUIP_ERR_OK)
+            return base;
+
         uint32 wornPriority = sBisPriorityMgr->GetWornPriority(bot, slot);
         uint8 targetSlot = slot;
 
@@ -77,8 +89,19 @@ namespace
             }
         }
 
+        // Already wearing this piece, or something higher up the ladder.
         if (priority <= wornPriority)
-            return ITEM_USAGE_NONE;  // already wearing this, or something higher on the ladder
+            return ITEM_USAGE_NONE;
+
+        if (sBisPriorityMgr->AnnounceOwnBis() && botAI)
+        {
+            std::string const tierName = sBisPriorityMgr->GetTierName(tierId);
+            std::ostringstream out;
+            out << "|cff1eff00" << proto->Name1 << "|r - c'est mon BiS";
+            if (!tierName.empty())
+                out << " (" << tierName << ")";
+            botAI->TellMaster(out.str());
+        }
 
         return bot->GetItemByPos(INVENTORY_SLOT_BAG_0, targetSlot) ? ITEM_USAGE_REPLACE : ITEM_USAGE_EQUIP;
     }
@@ -87,11 +110,11 @@ namespace
 ItemUsage BisItemUsageValue::Calculate()
 {
     ItemUsage const base = ItemUsageValue::Calculate();
-    return ApplyBisPolicy(bot, GetItemIdFromQualifier().itemId, base);
+    return ApplyBisPolicy(botAI, bot, GetItemIdFromQualifier().itemId, base);
 }
 
 ItemUsage BisItemUpgradeValue::Calculate()
 {
     ItemUsage const base = ItemUpgradeValue::Calculate();
-    return ApplyBisPolicy(bot, GetItemIdFromQualifier().itemId, base);
+    return ApplyBisPolicy(botAI, bot, GetItemIdFromQualifier().itemId, base);
 }

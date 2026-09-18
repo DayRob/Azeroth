@@ -48,21 +48,31 @@ public:
     void LoadTables();
 
     bool IsEnabled() const { return _enabled; }
-    bool BlockOffListRolls() const { return _blockOffListRolls; }
+    bool LeaveOtherSpecsBis() const { return _leaveOtherSpecsBis; }
+    bool AnnounceOwnBis() const { return _announceOwnBis; }
 
-    // True when this bot's itemisation is governed by the BiS ladder. False when
-    // the feature is off, the bot is the wrong type or too low level, OR its
-    // class/spec has no list at the current tier cap - in that last case the bot
-    // keeps playerbots' own logic rather than being frozen out of every item.
+    // True when this bot's gear decisions get the BiS layer on top of
+    // playerbots' own logic. False when the feature is off or the bot is a type
+    // the server excluded; there is no level gate, because the BiS layer only
+    // ever adds to the original logic, never replaces it.
     bool AppliesTo(Player* bot);
-
-    // True when the bot's class/spec has at least one row at or below the cap.
-    bool HasListFor(Player* bot);
 
     // Priority of itemId for this bot's class/spec, or 0 when the item is not on
     // the bot's list (wrong spec, unknown item, or tier above the current cap).
-    // Higher wins. outSlot receives the slot the list assigns it to.
-    uint32 GetItemPriority(Player* bot, uint32 itemId, uint8* outSlot = nullptr);
+    // Higher wins. outSlot receives the slot the list assigns it to, outTierId
+    // the tier the entry belongs to.
+    uint32 GetItemPriority(Player* bot, uint32 itemId, uint8* outSlot = nullptr,
+                           uint16* outTierId = nullptr);
+
+    // True when itemId is on SOMEONE's list but not on this bot's - the bot then
+    // leaves it to whoever it belongs to instead of rolling on it as an upgrade.
+    // Ignores the tier cap: an item is somebody's best in slot whatever phase
+    // the server currently runs.
+    bool IsBisForAnotherSpec(Player* bot, uint32 itemId);
+
+    // Human-readable tier name for the whisper, e.g. "Vanilla Phase 1 - Molten
+    // Core / Onyxia". Empty when the tier is unknown.
+    std::string GetTierName(uint16 tierId) const;
 
     // Priority of whatever the bot currently wears in that slot. 0 when the slot
     // is empty or holds something absent from the list.
@@ -98,6 +108,9 @@ private:
     // (cls<<16|spec<<8|faction) -> lowest tier present, so an empty or
     // out-of-reach list is detected without scanning the bucket.
     std::unordered_map<uint32, uint16> _minTierByCombo;
+    // itemId -> every (cls<<8|spec) that lists it. Backs IsBisForAnotherSpec
+    // without scanning the whole table on each decision.
+    std::unordered_map<uint32, std::vector<uint16>> _bisOwners;
     size_t _itemCount = 0;
     bool _loaded = false;
 
@@ -114,9 +127,9 @@ private:
     bool _applyToRandomBots = true;
     bool _applyToAddClassBots = false;
     bool _applyToAltBots = false;
-    bool _blockOffListRolls = true;
+    bool _leaveOtherSpecsBis = true;
+    bool _announceOwnBis = true;
     uint16 _maxTier = 0;
-    uint32 _minLevel = 0;
     bool _useIndividualProgression = false;
     uint32 _progressionCacheSeconds = 300;
 };

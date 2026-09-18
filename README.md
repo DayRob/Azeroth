@@ -13,8 +13,29 @@ module AzerothCore, et vos modifications locales de mod-playerbots restent intac
 
 ## Le principe
 
-Chaque objet de la table appartient à un **palier** (`tier_id`). Un palier plus haut
-l'emporte toujours sur un palier plus bas, quelles que soient les statistiques :
+Le module **n'enlève rien** à mod-playerbots. Sa logique d'origine — comparer le score de
+l'objet à celui de la pièce portée, équiper si le rapport dépasse `EquipUpgradeThreshold`
+— reste le socle, à tous les niveaux. Le module pose une couche de reconnaissance BiS
+par-dessus, et cette couche ne se déclenche que sur les objets que les tables connaissent.
+
+Face à une arme ou une armure, un bot tranche en trois branches :
+
+| Situation | Comportement |
+|---|---|
+| L'objet est **son** BiS | Il l'annonce à son maître — *« Couronne de vent du Néant - c'est mon BiS (Vanilla Phase 1 - Molten Core / Onyxia) »* — et roll dessus |
+| L'objet est le BiS **d'une autre** classe/spé | Il passe, et le laisse à qui il revient |
+| L'objet n'est le BiS de personne | Logique d'origine, inchangée |
+
+La troisième branche est le cas courant : l'immense majorité du butin n'est dans aucune
+liste, et les bots continuent de s'équiper exactement comme avant.
+
+**Il n'y a pas de niveau minimum.** Un bot de niveau 30 reconnaît son BiS de niveau 60
+aussi bien qu'un bot au cap — il ne le portera simplement que lorsqu'il en aura le niveau,
+la vérification d'équipabilité étant faite avant tout verdict forcé. Une classe ou une spé
+absente des tables garde intégralement la logique d'origine : le module ne bloque jamais un
+bot qu'il ne sait pas habiller.
+
+Chaque objet appartient à un **palier** (`tier_id`) qui donne l'ordre de progression :
 
 ```
 Vanilla Pre-Raid  <  MC/Ony  <  BWL  <  ZG  <  AQ20  <  AQ40  <  Naxx40
@@ -22,13 +43,8 @@ Vanilla Pre-Raid  <  MC/Ony  <  BWL  <  ZG  <  AQ20  <  AQ40  <  Naxx40
                   <  WotLK Pre-Raid  <  Naxx  <  Ulduar  <  ToC  <  ICC  <  Ruby Sanctum
 ```
 
-À l'intérieur d'un même palier et d'un même emplacement, la colonne `rank` ordonne les
-choix : 1 est le meilleur, puis 2, puis 3. Un guerrier Protection préférera donc toujours
-sa pièce de Blackwing Lair à sa pièce de Molten Core, et parmi les pièces de Molten Core
-celle de rank 1.
-
-Un bot ne roll que sur ce qui peut le faire monter dans cette échelle. Tout le reste :
-PASS.
+Un palier supérieur l'emporte toujours, et `rank` ordonne les choix à l'intérieur d'un
+même palier et d'un même emplacement.
 
 ## Ce que le module couvre — et ce qu'il ne couvre pas
 
@@ -101,8 +117,9 @@ tables puis redémarrer.
 
 ```ini
 PlayerbotsBis.Enable = 1
-PlayerbotsBis.MaxTier = 20          # cale les bots sur la phase de ton serveur
-PlayerbotsBis.BlockOffListRolls = 1 # PASS sur tout ce qui n'est pas dans la liste
+PlayerbotsBis.MaxTier = 20            # cale les bots sur la phase de ton serveur
+PlayerbotsBis.LeaveOtherSpecsBis = 1  # laisser à son propriétaire le BiS d'une autre spé
+PlayerbotsBis.AnnounceOwnBis = 1      # annoncer son propre BiS avant de roller
 ```
 
 Le fichier `.conf.dist` documente chaque réglage et donne la table des `tier_id`.
@@ -148,10 +165,8 @@ connues :
 - Sur les quatre paliers Vanilla renseignés, aucune ligne pour : Guerrier Armes, Voleur
   Assassinat, Voleur Subtilité, Prêtre Discipline.
 
-Une spé sans aucune ligne au palier courant retombe sur la logique d'origine de
-mod-playerbots : `BisPriorityMgr::AppliesTo()` renvoie false quand aucune ligne n'existe
-pour la combinaison classe/spé, donc le bot n'est jamais bloqué faute de liste. Même
-garde-fou pour les bots sous `MinLevel`.
+Une spé sans aucune ligne ne pose aucun problème : aucun objet ne correspondra jamais à sa
+liste, donc ses bots restent en branche 3 et gardent la logique d'origine.
 
 Après édition des tables, `.playerbotsbis reload` les recharge sans redémarrer. La même
 commande prend aussi en compte un changement de `PlayerbotsBis.Enable` ou de

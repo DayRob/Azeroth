@@ -5,6 +5,7 @@
  */
 
 #include "BisPriorityMgr.h"
+#include <algorithm>
 #include "AiFactory.h"
 #include "Config.h"
 #include "DatabaseEnv.h"
@@ -38,9 +39,9 @@ void BisPriorityMgr::LoadConfig()
     _applyToRandomBots = sConfigMgr->GetOption<bool>("PlayerbotsBis.ApplyToRandomBots", true);
     _applyToAddClassBots = sConfigMgr->GetOption<bool>("PlayerbotsBis.ApplyToAddClassBots", false);
     _applyToAltBots = sConfigMgr->GetOption<bool>("PlayerbotsBis.ApplyToAltBots", false);
-    _blockOffListRolls = sConfigMgr->GetOption<bool>("PlayerbotsBis.BlockOffListRolls", true);
+    _leaveOtherSpecsBis = sConfigMgr->GetOption<bool>("PlayerbotsBis.LeaveOtherSpecsBis", true);
+    _announceOwnBis = sConfigMgr->GetOption<bool>("PlayerbotsBis.AnnounceOwnBis", true);
     _maxTier = static_cast<uint16>(sConfigMgr->GetOption<uint32>("PlayerbotsBis.MaxTier", 0));
-    _minLevel = sConfigMgr->GetOption<uint32>("PlayerbotsBis.MinLevel", 0);
     _useIndividualProgression = sConfigMgr->GetOption<bool>("PlayerbotsBis.UseIndividualProgression", false);
     _progressionCacheSeconds = sConfigMgr->GetOption<uint32>("PlayerbotsBis.ProgressionCacheSeconds", 300);
 }
@@ -50,6 +51,7 @@ void BisPriorityMgr::LoadTables()
     _tiers.clear();
     _items.clear();
     _minTierByCombo.clear();
+    _bisOwners.clear();
     _itemCount = 0;
     _loaded = false;
 
@@ -119,6 +121,13 @@ void BisPriorityMgr::LoadTables()
         if (minIt == _minTierByCombo.end() || tierId < minIt->second)
             _minTierByCombo[comboKey] = tierId;
 
+        // Reverse index for the courtesy rule. Faction is deliberately left out:
+        // an item belongs to a spec whichever side lists it.
+        uint16 const ownerKey = (uint16(cls) << 8) | spec;
+        auto& owners = _bisOwners[itemId];
+        if (std::find(owners.begin(), owners.end(), ownerKey) == owners.end())
+            owners.push_back(ownerKey);
+
         // Keep the strongest row when the same item appears twice for a combo.
         auto existing = bucket.find(itemId);
         if (existing == bucket.end() || existing->second.tierId < entry.tierId ||
@@ -159,17 +168,9 @@ bool BisPriorityMgr::AppliesTo(Player* bot)
     if (!GET_PLAYERBOT_AI(bot))
         return false;
 
-    // A list holds level-cap gear for its tier, so a levelling bot must keep the
-    // original logic or it would be barred from equipping anything at all.
-    // MinLevel = 0 means "playerbots' own RandomBotMaxLevel".
-    uint32 const minLevel = _minLevel ? _minLevel : sPlayerbotAIConfig.randomBotMaxLevel;
-    if (minLevel && bot->GetLevel() < minLevel)
-        return false;
-
-    // No list for this class/spec at the current cap: leave the bot alone rather
-    // than blocking every item as "off-list".
-    if (!HasListFor(bot))
-        return false;
+    // No level gate and no "has a list" gate any more. The BiS layer sits on top
+    // of playerbots' own scoring instead of replacing it, so a bot it knows
+    // nothing about simply keeps the original behaviour and is never frozen.
 
     if (sRandomPlayerbotMgr.IsRandomBot(bot))
         return _applyToRandomBots;
@@ -178,23 +179,6 @@ bool BisPriorityMgr::AppliesTo(Player* bot)
         return _applyToAddClassBots;
 
     return _applyToAltBots;
-}
-
-bool BisPriorityMgr::HasListFor(Player* bot)
-{
-    uint8 const cls = bot->getClass();
-    uint8 const spec = ResolveSpec(bot);
-    uint8 const faction = bot->GetTeamId() == TEAM_ALLIANCE ? 1 : 2;
-    uint16 const cap = GetEffectiveTierCap(bot);
-
-    for (uint8 f : {uint8(0), faction})
-    {
-        auto it = _minTierByCombo.find(MakeKey(cls, spec, f));
-        if (it != _minTierByCombo.end() && it->second <= cap)
-            return true;
-    }
-
-    return false;
 }
 
 uint8 BisPriorityMgr::GetProgressionLevel(Player* bot)
@@ -270,7 +254,7 @@ uint16 BisPriorityMgr::GetEffectiveTierCap(Player* bot)
     return allowed;
 }
 
-uint32 BisPriorityMgr::GetItemPriority(Player* bot, uint32 itemId, uint8* outSlot)
+uint32 BisPriorityMgr::GetItemPriority(Player* bot, uint32 itemId, uint8* outSlot, uint16* outTierId)
 {
     if (!_loaded || !itemId)
         return 0;
@@ -306,8 +290,31 @@ uint32 BisPriorityMgr::GetItemPriority(Player* bot, uint32 itemId, uint8* outSlo
 
     if (outSlot)
         *outSlot = found->slot;
+    if (outTierId)
+        *outTierId = found->tierId;
 
     return uint32(found->tierId) * TIER_WEIGHT + (255u - std::min<uint32>(found->rank, 255u));
+}
+
+bool BisPriorityMgr::IsBisForAnotherSpec(Player* bot, uint32 itemId)
+{
+    auto it = _bisOwners.find(itemId);
+    if (it == _bisOwners.end())
+        return false;  // nobody's best in slot
+
+    uint16 const mine = (uint16(bot->getClass()) << 8) | ResolveSpec(bot);
+
+    for (uint16 owner : it->second)
+        if (owner != mine)
+            return true;
+
+    return false;
+}
+
+std::string BisPriorityMgr::GetTierName(uint16 tierId) const
+{
+    auto it = _tiers.find(tierId);
+    return it == _tiers.end() ? std::string() : it->second.name;
 }
 
 uint32 BisPriorityMgr::GetWornPriority(Player* bot, uint8 slot)
