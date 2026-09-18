@@ -151,8 +151,11 @@ Les lignes fournies sont converties depuis la table `playerbots_bis_gear` de
 mod-playerbots — identifiants et noms d'objets d'origine — réparties sur l'échelle de
 paliers. `tools/convert_playerbots_bis_gear.py` permet de régénérer le fichier.
 
-Le palier 10 (Vanilla Pre-Raid) est fourni à part, dans
-`03_vanilla_preraid.sql`. Ce fichier ne code aucun identifiant en dur : il résout chaque
+Le palier 10 (Vanilla Pre-Raid) est fourni à part, en deux fichiers.
+`03_vanilla_preraid.sql` vient des guides Best-in-Slot de Wowhead Classic, avec leurs
+rangs Best / Optional. `04_vanilla_preraid_wowsims.sql` reprend les sets pré-raid du
+simulateur [**WoWSims Classic**](https://github.com/wowsims/classic) (licence MIT) : un
+seul choix par emplacement, donc tout en rank 1. Ce fichier ne code aucun identifiant en dur : il résout chaque
 objet **par nom** contre `item_template` au moment de l'import. Un nom erroné n'insère
 rien plutôt que de faire équiper n'importe quoi, et la requête de vérification en fin de
 fichier liste les noms non résolus. C'est le format à suivre pour contribuer une liste.
@@ -161,7 +164,9 @@ fichier liste les noms non résolus. C'est le format à suivre pour contribuer u
 connues :
 
 - Paliers vides : Zul'Gurub (40), AQ20 (50), WotLK Pre-Raid (130), Ruby Sanctum (180).
-- Palier 10 (Vanilla Pre-Raid) : Guerrier Fureur uniquement pour l'instant.
+- Palier 10 (Vanilla Pre-Raid) : 15 combinaisons classe/spé sur 27. Manquent les trois
+  paladins, les trois chamans, les soigneurs prêtre et druide, Voleur Assassinat et
+  Subtilité, Druide Ours, et Guerrier Armes.
 - Sur les quatre paliers Vanilla renseignés, aucune ligne pour : Guerrier Armes, Voleur
   Assassinat, Voleur Subtilité, Prêtre Discipline.
 
@@ -173,6 +178,11 @@ commande prend aussi en compte un changement de `PlayerbotsBis.Enable` ou de
 `PlayerbotsBis.MaxTier` : le module s'enregistre auprès du moteur dès le premier tick du
 monde, même désactivé, précisément pour pouvoir être basculé à chaud.
 
-## Licence
+## Licence et crédits
 
 GNU GPL v2, comme AzerothCore et mod-playerbots.
+
+Les listes pré-raid du fichier `04` proviennent de
+[**WoWSims Classic**](https://github.com/wowsims/classic), sous licence MIT. Le projet
+demande un lien visible vers l'original dans tout travail qui réutilise ses données —
+le voici, et il figure aussi en tête du fichier SQL concerné.
