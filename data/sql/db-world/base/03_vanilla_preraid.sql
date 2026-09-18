@@ -48,19 +48,20 @@ INSERT INTO `bis_seed` (`class`, `spec`, `slot`, `faction`, `rank`, `item_name`)
 (1, 1,  1, 0, 3, 'Imperial Jewel'),
 -- Epaules (2)
 (1, 1,  2, 0, 1, 'Truestrike Shoulders'),
-(1, 1,  2, 0, 2, 'Black Dragonscale Shoulders'),
+(1, 1,  2, 0, 1, 'Black Dragonscale Shoulders'),
 (1, 1,  2, 0, 3, 'Wyrmhide Spaulders'),
 -- Torse (4)
 (1, 1,  4, 0, 1, 'Savage Gladiator Chain'),
 (1, 1,  4, 0, 2, 'Cadaverous Armor'),
-(1, 1,  4, 0, 3, 'Tombstone Breastplate'),
-(1, 1,  4, 0, 3, 'Deathdealer Breastplate'),
+(1, 1,  4, 0, 2, 'Tombstone Breastplate'),
+(1, 1,  4, 0, 2, 'Deathdealer Breastplate'),
 -- Ceinture (5)
 (1, 1,  5, 0, 1, 'Omokk''s Girth Restrainer'),
 (1, 1,  5, 0, 1, 'Brigam Girdle'),
 (1, 1,  5, 0, 2, 'Cloudrunner Girdle'),
 -- Jambes (6)
 (1, 1,  6, 0, 1, 'Devilsaur Leggings'),
+(1, 1,  6, 0, 1, 'Eldritch Reinforced Legplates'),
 (1, 1,  6, 0, 1, 'Black Dragonscale Leggings'),
 (1, 1,  6, 0, 2, 'Cloudkeeper Legplates'),
 -- Pieds (7)
@@ -75,7 +76,7 @@ INSERT INTO `bis_seed` (`class`, `spec`, `slot`, `faction`, `rank`, `item_name`)
 -- Mains (9)
 (1, 1,  9, 0, 1, 'Edgemaster''s Handguards'),
 (1, 1,  9, 0, 1, 'Devilsaur Gauntlets'),
-(1, 1,  9, 0, 2, 'Gauntlets of Heroism'),
+(1, 1,  9, 0, 1, 'Gauntlets of Heroism'),
 (1, 1,  9, 0, 3, 'Gargoyle Slashers'),
 -- Anneaux (10) - le module compare automatiquement avec l'emplacement 11
 (1, 1, 10, 0, 1, 'Painweaver Band'),
