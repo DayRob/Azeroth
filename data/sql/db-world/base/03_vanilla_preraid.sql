@@ -113,6 +113,14 @@ INSERT INTO `bis_seed` (`class`, `spec`, `slot`, `faction`, `rank`, `item_name`)
 -- =====================================================================
 -- Chasseur (classe 3) - liste unique appliquee aux trois onglets :
 -- en Vanilla pre-raid, Maitrise / Precision / Survie portent le meme stuff.
+--
+-- Les armes Dal'Rend sont volontairement ABSENTES de cette liste, bien que le
+-- guide les propose en une-main. Elles sont beaucoup trop rares pour que le
+-- chasseur les dispute au guerrier, dont elles sont le BiS de main droite ET de
+-- main gauche. Les retirer d'ici ne fait pas que l'empecher de rouler dessus :
+-- l'objet devient "le BiS d'une autre spe", donc le chasseur le laisse
+-- activement au guerrier. L'arme a deux mains reste de toute facon son
+-- meilleur choix d'apres le set d'exemple du guide.
 -- =====================================================================
 INSERT INTO `bis_seed` (`class`, `spec`, `slot`, `faction`, `rank`, `item_name`) VALUES
 (3, 0,  0, 0, 1, 'Backwood Helm'),
@@ -241,15 +249,9 @@ INSERT INTO `bis_seed` (`class`, `spec`, `slot`, `faction`, `rank`, `item_name`)
 (3, 0, 15, 0, 2, 'Peacemaker'),
 (3, 1, 15, 0, 2, 'Peacemaker'),
 (3, 2, 15, 0, 2, 'Peacemaker'),
-(3, 0, 15, 0, 3, 'Dal''Rend''s Sacred Charge'),
-(3, 1, 15, 0, 3, 'Dal''Rend''s Sacred Charge'),
-(3, 2, 15, 0, 3, 'Dal''Rend''s Sacred Charge'),
-(3, 0, 16, 0, 1, 'Dal''Rend''s Tribal Guardian'),
-(3, 1, 16, 0, 1, 'Dal''Rend''s Tribal Guardian'),
-(3, 2, 16, 0, 1, 'Dal''Rend''s Tribal Guardian'),
-(3, 0, 16, 0, 2, 'Bone Slicing Hatchet'),
-(3, 1, 16, 0, 2, 'Bone Slicing Hatchet'),
-(3, 2, 16, 0, 2, 'Bone Slicing Hatchet'),
+(3, 0, 16, 0, 1, 'Bone Slicing Hatchet'),
+(3, 1, 16, 0, 1, 'Bone Slicing Hatchet'),
+(3, 2, 16, 0, 1, 'Bone Slicing Hatchet'),
 (3, 0, 17, 0, 1, 'Bloodseeker'),
 (3, 1, 17, 0, 1, 'Bloodseeker'),
 (3, 2, 17, 0, 1, 'Bloodseeker'),
