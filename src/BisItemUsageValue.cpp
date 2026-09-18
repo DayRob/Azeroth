@@ -62,7 +62,13 @@ namespace
         // ── Branch 2 ──────────────────────────────────────────────────────────
         if (!priority)
         {
-            if (sBisPriorityMgr->LeaveOtherSpecsBis() && sBisPriorityMgr->IsBisForAnotherSpec(bot, itemId))
+            // Deferring is only fair when the bot has a list of its own to fall
+            // back on. A spec nobody has written a list for yet would otherwise
+            // refuse every item any other spec claims while never claiming
+            // anything, and end up the worst geared character on the server.
+            // Such a bot keeps playerbots' original behaviour untouched.
+            if (sBisPriorityMgr->LeaveOtherSpecsBis() && sBisPriorityMgr->HasReachableList(bot) &&
+                sBisPriorityMgr->IsBisForAnotherSpec(bot, itemId))
                 return ITEM_USAGE_NONE;
 
             return base;  // ── Branch 3: nobody's list, original logic wins

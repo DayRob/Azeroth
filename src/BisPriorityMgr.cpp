@@ -296,6 +296,28 @@ uint32 BisPriorityMgr::GetItemPriority(Player* bot, uint32 itemId, uint8* outSlo
     return uint32(found->tierId) * TIER_WEIGHT + (255u - std::min<uint32>(found->rank, 255u));
 }
 
+bool BisPriorityMgr::HasReachableList(Player* bot)
+{
+    if (!_loaded)
+        return false;
+
+    uint8 const cls = bot->getClass();
+    uint8 const spec = ResolveSpec(bot);
+    uint8 const faction = bot->GetTeamId() == TEAM_ALLIANCE ? 1 : 2;
+    uint16 const cap = GetEffectiveTierCap(bot);
+
+    // _minTierByCombo holds the lowest tier present for each combo, so this
+    // stays O(1) on a decision path that runs for every lootable item.
+    for (uint8 f : {uint8(0), faction})
+    {
+        auto it = _minTierByCombo.find(MakeKey(cls, spec, f));
+        if (it != _minTierByCombo.end() && it->second <= cap)
+            return true;
+    }
+
+    return false;
+}
+
 bool BisPriorityMgr::IsBisForAnotherSpec(Player* bot, uint32 itemId)
 {
     auto it = _bisOwners.find(itemId);

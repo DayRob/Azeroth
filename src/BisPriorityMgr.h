@@ -64,6 +64,12 @@ public:
     uint32 GetItemPriority(Player* bot, uint32 itemId, uint8* outSlot = nullptr,
                            uint16* outTierId = nullptr);
 
+    // True when this bot's class/spec has at least one row it can actually reach
+    // (a tier at or below its cap). False means nothing is maintained for that
+    // spec yet, and the bot must NOT defer to other specs: with no list of its
+    // own it would refuse everything anybody else claims and end up naked.
+    bool HasReachableList(Player* bot);
+
     // True when itemId is on SOMEONE's list but not on this bot's - the bot then
     // leaves it to whoever it belongs to instead of rolling on it as an upgrade.
     // Ignores the tier cap: an item is somebody's best in slot whatever phase
